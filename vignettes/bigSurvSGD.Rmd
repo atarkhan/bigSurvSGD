@@ -24,11 +24,17 @@ We give a short tutorial on using bigSurvSGD package. This package fits Cox Mode
 ## Intallating package
 Like many other R packages, the simplest way to obtain `bigSurvSGD` is to install it directly from CRAN:
 
-```{r}
+```{r eval=F}
 install.packages("bigSurvSGD", repos = "http://cran.us.r-project.org")
 ```
 
-Users may change the `repos` options depending on their locations and preferences.
+Users may change the `repos` options depending on their locations and preferences. Alternatively, users can install the package using Github repository:
+
+```{r eval=F}
+library(devtools)
+install_github("atarkhan/bigSurvSGD")
+```
+
 
 ## Loading package
 We load the packages `bigSurvSGD` and `survival` as folowing
