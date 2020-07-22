@@ -10,6 +10,8 @@
 
 using namespace Rcpp;
 using namespace std;
+// [[Rcpp::plugins("cpp11")]]
+
 // [[Rcpp::export]]
 List oneChunkC(NumericMatrix subData, NumericVector Beta, std::string beta_type,
 int strata_size, int batch_size,

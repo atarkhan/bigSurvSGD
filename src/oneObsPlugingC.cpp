@@ -10,6 +10,8 @@
 
 using namespace Rcpp;
 using namespace std;
+// [[Rcpp::plugins("cpp11")]]
+
 // [[Rcpp::export]]
 List oneObsPlugingC(NumericMatrix subDataa, NumericVector Beta,
 int strata_size, std::string norm_method, NumericVector features_mean, 

@@ -10,6 +10,7 @@
 
 using namespace Rcpp;
 using namespace std;
+// [[Rcpp::plugins("cpp11")]]
 
 // [[Rcpp::export]]
 NumericVector lambdaMaxC(NumericMatrix subDataa, int strata_size, std::string norm_method,
