@@ -193,14 +193,26 @@ Proximal stochastic gradient descent algorithm.
 }
 \examples{
 # Simulated survival data
-data(survData)
+data(survData) # a dataset with 1000 observations (rows) and 10 features (columns)
 resultsBig <- bigSurvSGD(formula=Surv(time, status)~.,data=survData, 
 parallel.flag=TRUE, num.cores=2)
 resultsBig
 
+
+
+# Simulated survival data to be read off the memory
+data(survData) # a dataset with 1000 observations (rows) and 10 features (columns)
+# Save dataset survSGD as bigSurvSGD to be read chunk-by-chunk off the memory 
+write.csv(survData, file = "/home/arash/bigSurvData.csv", row.names = FALSE) 
+resultsBigOffMemory <- bigSurvSGD(formula=Surv(time, status)~.,data="/home/arash/bigSurvData.csv", 
+bigmemory.flag=TRUE, parallel.flag=TRUE, num.cores=2)
+resultsBigOffMemory
+
+
+
 # Simulated sparse survival data
-data(sparseSurvData)
-resultsBigSparse <- bigSurvSGD(formula=Surv(time, status)~.,data=survData, 
+data(sparseSurvData) # a sparse data with 100 observations (rows) and 150 features (columns)
+resultsBigSparse <- bigSurvSGD(formula=Surv(time, status)~.,data=sparseSurvData, 
 alpha=0.9, lambda=0.1)
 resultsBigSparse
 
