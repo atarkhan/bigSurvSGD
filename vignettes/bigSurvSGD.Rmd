@@ -2,8 +2,8 @@
 title: "bigSurvSGD: Big Survival Data Analysis via Stochastic Gradient Descent"
 author: "Aliasghar (Arash) Tarkhan and Noah Simon"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-#output: pdf_document
+#output: rmarkdown::html_vignette
+output: pdf_document
 vignette: >
   %\VignetteIndexEntry{bigSurvSGD}
   %\VignetteEngine{knitr::rmarkdown}
