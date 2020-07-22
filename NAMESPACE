@@ -1,0 +1,9 @@
+useDynLib(bigSurvSGD, .registration=TRUE)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
+importFrom("stats", "pt", "qt", "quantile", "rnorm")
+importFrom("doParallel", "registerDoParallel")
+importFrom("parallel", "makeCluster", "stopCluster", "detectCores")
+importFrom("bigmemory", "read.big.matrix")
+importFrom("foreach","%dopar%")
+

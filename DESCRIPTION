@@ -1,0 +1,35 @@
+Package: bigSurvSGD
+Type: Package
+Title: Big Survival Analysis Using Stochastic Gradient Descent
+Version: 1.0
+Date: 2020-07-04
+Authors@R: 
+    person(given = "Aliasghar (Arash)",
+           family = "Tarkhan",
+           role = c("aut", "cre"),
+           email = "atarkhan@uw.edu",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person(given = "Noah",
+           family = "Simon",
+           role = c("aut", "cre"),
+           email = "nrsimon@uw.edu",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Maintainer: Aliasghar (Arash) Tarkhan <atarkhan@uw.edu>
+Description: Fits Cox Model via stochastic gradient descent (SGD). This implementation avoids computational instability of the 
+	standard Cox Model when dealing large datasets. Furthermore, it scales up with large datasets 
+	that do not fit the memory. It also handles large sparse datasets using Proximal stochastic 
+	gradient descent algorithm. 
+License: GPL (>= 2)
+Imports: Rcpp (>= 1.0.4),
+	bigmemory,
+	doParallel,
+	survival
+Depends: foreach,
+	parallel
+LinkingTo: Rcpp
+Encoding: UTF-8
+RoxygenNote: 7.1.0
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

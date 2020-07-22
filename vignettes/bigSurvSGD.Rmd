@@ -1,0 +1,110 @@
+---
+title: "bigSurvSGD: Big Survival Data Analysis via Stochastic Gradient Descent"
+author: "Aliasghar (Arash) Tarkhan and Noah Simon"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+#output: pdf_document
+vignette: >
+  %\VignetteIndexEntry{bigSurvSGD}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+We give a short tutorial on using bigSurvSGD package. This package fits Cox Model via stochastic gradient descent (SGD). This implementation avoids computational instability of the standard Cox Model when datasets are large. Furthermore, it scales up with very large datasets that do not fit the memory. It also handles large sparse datasets using the Proximal stochastic gradient descent algorithm.
+
+# Installing and loading package 
+## Intallating package
+Like many other R packages, the simplest way to obtain `bigSurvSGD` is to install it directly from CRAN:
+
+```{r}
+install.packages("bigSurvSGD", repos = "http://cran.us.r-project.org")
+```
+
+Users may change the `repos` options depending on their locations and preferences.
+
+## Loading package
+We load the packages `bigSurvSGD` and `survival` as folowing
+
+```{r setup}
+library(bigSurvSGD)
+library(survival) 
+```
+
+# Fitting Cox model
+## Loading data
+We first load dataset `survData` included in package:
+
+```{r}
+data("survData")
+```
+
+Now we use `bigSurvSGD` to estimate coefficients as following
+
+```{r}
+fitBigSurvSGD <- bigSurvSGD(formula=Surv(time, status)~.,data=survData, 
+                            parallel.flag=TRUE, num.cores = 2)
+fitBigSurvSGD
+```
+
+For comparison, we can use standard Cox Model `coxph` to estimate coefficients as following
+
+```{r}
+fitCox <- coxph(formula=Surv(time, status)~.,data=survData)
+fitCox
+```
+
+Users need to use `formula` to specify `time-to-event` and `status` variables if they were named deifferently from `time` and `status`. User may also need to specify a subset of features they need to include in the model. For example, suppose that variable `t` and `s` represent `time-to-event` and `status` variables, and a user wants to only include features $X1$, $X2$, and $X3$:
+
+```{r}
+colnames(survData)[c(1,2)] <- c("t", "s")
+fitBigSurvSGD <- bigSurvSGD(formula=Surv(time=t, status=s)~X1+X2+X3, data=survData, 
+                            parallel.flag=TRUE, num.cores=2)
+```
+
+For comparison, we can estimate coefficents using standard Cox Model `coxph`:
+
+```{r}
+fitCox <- coxph(formula=Surv(t, s)~X1+X2+X3, data=survData)
+fitCox
+```
+
+Note that the current version only supports numerical variables. Users need to convert non-numerical valriables into numerical variables beforehand.
+
+## Fitting large dataset of the hard drive
+Package `bigSurvSGD` can handle large datasets that do not fit the memory. For an example, suppose that dataset `bigSurvData` is very big and we saved it with path `/home/arsh/bigSurvData.csv`:
+
+```{r}
+data("survData")
+write.csv(survData, file = "/home/arash/bigSurvData.csv", row.names = F)
+```
+
+Suppose that memory can only handle up to 100 rows of `bigSurdData`. In practice, this number is a maximum number of rows for which R can run without "lack of memory" error. This number would be big if there few features (columns) in dataset and it wold be small if there are many featurs. Note that number of rows per chunk must be at least equal to strata size specified as `strata.size` in this package. For our example, we ask `bigSurvSGD` to use `bigmemory` package (by defining `bigmemory.flag=T`) to read data chunk-by-chunk off the memory with chunk size of 100.
+
+```{r}
+fitBigSurvSGD <- bigSurvSGD(formula=Surv(time=time, status=status)~., 
+                            data="/home/arash/bigSurvData.csv", 
+                            bigmemory.flag = T, num.rows.chunk = 100)
+fitBigSurvSGD
+```
+
+Note that the current package only supports a path to a `.csv` (comma separated values) files. 
+
+## Fitting Cox Model with sparse data
+Now we consider dataset `sparseSurvData` with number of features (columns) larger than number of observations (rows). `bigSurvSGD` package handles sparse datasets. The following fits a regularized Cox Model with the elastic net penalty where the penalty coefficients of $l_1$ and $l_2$ norms are $alpha * lambda=0.09$ and $(1-alpha)*lambda=0.01$, respectively.
+
+```{r}
+data("sparseSurvData")
+fitBigSurvSGD <- bigSurvSGD(formula=Surv(time=time, status=status)~.,data=sparseSurvData, 
+                            alpha = 0.9, lambda = 0.1)
+fitBigSurvSGD$coef
+```
+
+Note that if the dataset is very large, users may want to specify maximum number of rows per chunk specified by `max.rows.chunk` to read data chunk-by-chunk off the memory. This avoids lack-of-memory issue, as we discussed in the previous section.
