@@ -10,6 +10,10 @@
 
 using namespace Rcpp;
 using namespace std;
+
+//' @title Calculates the gradient and Hessian corresponding to one individual
+//' @name oneObsPlugingC
+
 // [[Rcpp::plugins("cpp11")]]
 
 // [[Rcpp::export]]

@@ -6,4 +6,6 @@ importFrom("doParallel", "registerDoParallel")
 importFrom("parallel", "makeCluster", "stopCluster", "detectCores")
 importFrom("bigmemory", "read.big.matrix")
 importFrom("foreach","%dopar%")
+importFrom("utils","read.csv")
+import(foreach)
 

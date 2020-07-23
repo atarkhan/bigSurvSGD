@@ -10,6 +10,11 @@
 
 using namespace Rcpp;
 using namespace std;
+
+//' @title Calculates the maximum penalty coefficient lambda for which all 
+//' coefficients become zero
+//' @name lambdaMaxC
+
 // [[Rcpp::plugins("cpp11")]]
 
 // [[Rcpp::export]]

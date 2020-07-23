@@ -10,6 +10,10 @@
 
 using namespace Rcpp;
 using namespace std;
+
+//' @title Updates the coefficients based on one pass of data
+//' @name oneChunkC
+
 // [[Rcpp::plugins("cpp11")]]
 
 // [[Rcpp::export]]
