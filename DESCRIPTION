@@ -22,7 +22,8 @@ Imports: Rcpp (>= 1.0.4),
 	doParallel,
 	survival
 Depends: foreach,
-	parallel
+	parallel,
+	R (>= 3.5.0)
 LinkingTo: Rcpp
 Encoding: UTF-8
 RoxygenNote: 7.1.0
