@@ -3,15 +3,10 @@ Type: Package
 Title: Big Survival Analysis Using Stochastic Gradient Descent
 Version: 1.0.0
 Date: 2020-07-04
-Authors@R: 
-    person(given = "Aliasghar",
-           family = "Tarkhan",
-           role = c("aut", "cre"),
-           email = "atarkhan@uw.edu")
-    person(given = "Noah",
-           family = "Simon",
-           role = c("aut", "cre"),
-           email = "nrsimon@uw.edu")
+Authors@R: as.person(c(
+	"Aliasghar Tarkhan <atarkhan@uw.edu> [aut, cre]",
+	"Noah Simon <nrsimon@uw.edu> [aut]"
+	))
 Description: Fits Cox Model via stochastic gradient descent (SGD). This implementation avoids computational instability of the 
 	standard Cox Model when dealing large datasets. Furthermore, it scales up with large datasets 
 	that do not fit the memory. It also handles large sparse datasets using Proximal stochastic 

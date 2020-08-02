@@ -2,6 +2,8 @@
 % Please edit documentation in R/bigSurvSGD.R
 \name{bigSurvSGD}
 \alias{bigSurvSGD}
+\alias{print.bigSurvSGD}
+\alias{plot.bigSurvSGD}
 \title{Big survival data analysis using stochastic gradient descent}
 \usage{
 bigSurvSGD(
@@ -34,13 +36,17 @@ bigSurvSGD(
   lambda = NULL,
   nlambda = 100,
   num.strata.lambda = 10,
-  lambda.scale = 2,
+  lambda.scale = 1,
   parallel.flag = F,
   num.cores = NULL,
   bigmemory.flag = F,
   num.rows.chunk = 1e+06,
   col.names = NULL
 )
+
+\method{print}{bigSurvSGD}(x, ...)
+
+\method{plot}{bigSurvSGD}(x, ...)
 }
 \arguments{
 \item{formula}{a formula in format of Surv(time=time, status=status)~feature1+feature2+... 
@@ -149,7 +155,7 @@ Default is 100.}
 when alpha is not NULL and lambda=NULL (see lambda).}
 
 \item{lambda.scale}{we scale lambda.max to make sure we start with a lambda
-for which we get all coefficients equal to 0. Default is 2.}
+for which we get all coefficients equal to 0. Default is 1.}
 
 \item{parallel.flag}{to specify if we want to use parallel computing for
 inference. Default is "F", i.e., no parallel computing.}
@@ -168,6 +174,10 @@ if you receive an error due to lack of memory. The default value is 1e6 rows.}
 \item{col.names}{a vector of characters for column names of data.
 If NULL, the column names of dataset "data" will be selected. The default
 is NULL (i.e., reads columns of given dataset).}
+
+\item{x}{a 'bigSurvSGD' object}
+
+\item{...}{additional argument used}
 }
 \value{
 coef: Log of hazards ratio. If no inference is used, it returns a vector for estimated

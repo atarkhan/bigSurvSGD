@@ -61,9 +61,9 @@ NumericVector features_mean, NumericVector features_sd) {
 		}
 
 		std::multimap<double, std::size_t> mm;
-		for (std::size_t i = strata_size-1; (int)i !=-1 ; --i)
+		for (std::size_t i = strata_size-1; (int)i !=-1 ; --i){
     			mm.insert({time2event[i],i});
-
+		}
 		std::vector<std::size_t> c;
 		std::vector<int> d;
 		for (const auto & kv : mm) {

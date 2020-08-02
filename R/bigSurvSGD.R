@@ -80,7 +80,7 @@
 #' @param nlambda number of elements to be considered for scenario (2) above.
 #' Default is 100.
 #' @param lambda.scale we scale lambda.max to make sure we start with a lambda
-#' for which we get all coefficients equal to 0. Default is 2.
+#' for which we get all coefficients equal to 0. Default is 1.
 #' @param num.strata.lambda number of sample strata to estimate maximum lambda (lambda.max) 
 #' when alpha is not NULL and lambda=NULL (see lambda).
 #' @param parallel.flag to specify if we want to use parallel computing for
@@ -141,27 +141,24 @@
 #' resultsBigSparse
 #' }
 #' 
-#' @import Rcpp (>= 1.0.4) doParallel parallel bigmemory survival foreach
-#' 
-#' @useDynLib bigSurvSGD, .registration = TRUE
-#' 
+#' @export
 bigSurvSGD <- function(formula=Surv(time=time, status=status)~., data,
-                       norm.method="standardize", features.mean=NULL, features.sd=NULL,
-                       opt.method="AMSGrad", beta.init=NULL, beta.type="averaged",
-                       lr.const=0.12, lr.tau=0.5, strata.size=20, batch.size=1,
-                       num.epoch=100, b1=0.9, b2=0.99, eps=1e-8, inference.method="plugin",
-                       num.boot=1000, num.epoch.boot=100, boot.method="SGD", lr.const.boot=0.12,
-                       lr.tau.boot=0.5, num.sample.strata=1000, sig.level=0.05, beta0=0,
-                       alpha=NULL, lambda=NULL, nlambda=100, num.strata.lambda=10, lambda.scale=2,
-                       parallel.flag=F, num.cores=NULL, 
-                       bigmemory.flag=F, num.rows.chunk=1e6, col.names=NULL){
+                               norm.method="standardize", features.mean=NULL, features.sd=NULL,
+                               opt.method="AMSGrad", beta.init=NULL, beta.type="averaged",
+                               lr.const=0.12, lr.tau=0.5, strata.size=20, batch.size=1,
+                               num.epoch=100, b1=0.9, b2=0.99, eps=1e-8, inference.method="plugin",
+                               num.boot=1000, num.epoch.boot=100, boot.method="SGD", lr.const.boot=0.12,
+                               lr.tau.boot=0.5, num.sample.strata=1000, sig.level=0.05, beta0=0,
+                               alpha=NULL, lambda=NULL, nlambda=100, num.strata.lambda=10, lambda.scale=1,
+                               parallel.flag=F, num.cores=NULL, 
+                               bigmemory.flag=F, num.rows.chunk=1e6, col.names=NULL){
   
   
   #######################################################################
   # Reading big data off the memory
   if (!bigmemory.flag){ # if not using bigmemory
     if (!is.data.frame(data)){ # if you give a path for your data
-      big.data <- read.csv(file = "/home/arash/bigSurvData.csv")
+      big.data <- read.csv(file = data)
     }else{ # # if you give data frame
       big.data <- data
     }
@@ -325,7 +322,7 @@ bigSurvSGD <- function(formula=Surv(time=time, status=status)~., data,
       gt.sum <- gt.sum + lambdaMaxC(sub.data, strata.size, norm.method, features.mean, features.sd)
     }
     # returns maximum element of absolute sum of gradients
-    return(max(abs(gt.sum)))
+    return(max(abs(gt.sum))/num.strata.lambda)
   }
   #######################################################################
   
@@ -484,9 +481,9 @@ bigSurvSGD <- function(formula=Surv(time=time, status=status)~., data,
                           features.indices, surv.indices) * lambda.scale
     # If number of features is less than number of subjects, consider vector of smaller lambdas
     if (length(features.indices) < num.rows.big){
-      lam.min <- 0.0001*lam.max
-    }else{
       lam.min <- 0.01*lam.max
+    }else{
+      lam.min <- 0.0001*lam.max
     }
     
     # Creates a vector of lambda with maximum element of lam.max
@@ -600,7 +597,7 @@ bigSurvSGD <- function(formula=Surv(time=time, status=status)~., data,
                         beta.hat-quantiles.boot[2,],
                         beta.hat-quantiles.boot[1,])
       rownames(beta.hat) <- sub.col.names
-      colnames(beta.hat) <- c("estimate", "lower.CI", "upper.CI")
+      colnames(beta.hat) <- c("estimate", paste0("lower ", (1-sig.level),"%CI"),  paste0("upper ", (1-sig.level),"%CI"))
       # Scales back the coefficients is "scaling" or "normalization has been used"
       beta.hat[features.sd!=0,1:3] <- beta.hat[features.sd!=0,1:3]/matrix(rep(features.sd[features.sd!=0], 3), nrow(beta.hat), 3, byrow = F)
       beta.hat.exp <- exp(beta.hat)
@@ -653,7 +650,7 @@ bigSurvSGD <- function(formula=Surv(time=time, status=status)~., data,
       beta.hat <- cbind(beta.hat, beta.hat - qt(1-(sig.level/2), df=num.rows.big) * se.hat,
                         beta.hat + qt(1-(sig.level/2), df=num.rows.big) * se.hat,
                         t.stat, p.value)
-      colnames(beta.hat) <- c("estimate", "lower.CI", "upper.CI", "t-stat", "p-value")
+      colnames(beta.hat) <- c("estimate", paste0("lower ", (1-sig.level),"%CI"),  paste0("upper ", (1-sig.level),"%CI"), "z", "p-value")
       rownames(beta.hat) <- sub.col.names
       # Scales back the coefficients is "scaling" or "normalization has been used"
       beta.hat[features.sd!=0,1:3] <- beta.hat[features.sd!=0,1:3]/
@@ -667,6 +664,68 @@ bigSurvSGD <- function(formula=Surv(time=time, status=status)~., data,
     }
     #######################################################################
   }
-  return(list(coef=beta.hat, coef.exp=beta.hat.exp, lambda=0, alpha=0, features.mean=features.mean, features.sd=features.sd))
+  out <- NULL
+  out$coef <- beta.hat
+  out$coef.exp <- beta.hat.exp
+  out$lambda <- lambda
+  out$alpha <- alpha
+  out$features.mean <- features.mean
+  out$features.sd <- features.sd
+  out$call <- match.call()
+  class(out) <- "bigSurvSGD"
+  out
+}
+#' A S3 function to print output
+#' @rdname bigSurvSGD
+#' @param x a 'bigSurvSGD' object
+#' @exportMethod  
+#' S3method(bigSurvSGD, "bigSurvSGD", met="print.bigSurvSGD")
+print.bigSurvSGD <- function(x, ...){
+  cat("Call:\n")
+  print(x$call)
+  cat("\nCoefficients (log hazards ratio)\n")
+  if(ncol(x$coef)==5){
+    X5 <- matrix(NA, nrow(x$coef),1)
+    colnames(X5) < "p-value"
+    for(i in 1:nrow(x$coef)){
+      if(x$coef[i,5]<2e-16){
+        X5[i] <- "<2e-16 ***"
+      }else if(x$coef[i,5]<0.001){
+        X5[i] <- "<0.001 ***"
+      }else if(x$coef[i,5]<0.01){
+        X5[i] <- "<0.01 **"
+      }else if(x$coef[i,5]<0.05){
+        X5[i] <- paste0(round(x$coef[i,5],2), " *")
+      }else{
+        X5[i] <- paste0(round(x$coef[i,5],2))
+      }
+    }
+    X <- data.frame(cbind(round(x$coef[,1:4],4), X5))
+    colnames(X)[5] <- "p-value'"
+    print(X)
+  }else{
+    print(data.frame(round(x$coef,4)))
+  }
+  cat("\nCoefficients (hazards ratio)\n")
+  if(ncol(x$coef.exp)==5){
+    X <- data.frame(cbind(round(x$coef.exp[,1:4],4), X5))
+    colnames(X)[5] <- "p-value"
+    print(X)
+  }else{
+    print(data.frame(round(x$coef.exp,4)))
+  }
+}
+#' A S3 function to plot coefficients against lambdas
+#' @rdname bigSurvSGD
+#' @param x a 'bigSurvSGD' object
+#' @param ... additional argument used
+#' @exportMethod 
+#' S3method(bigSurvSGD, "bigSurvSGD", met="plot.bigSurvSGD") 
+plot.bigSurvSGD <- function(x, ...){
+  plot(x$lambda, x$coef[1,], xlab = "lambda", ylab = "coefficients", type = "l", col=1,
+       ylim = c(min(x$coef), max(x$coef)))
+  for(l in 2:nrow(x$coef)){
+    lines(x$lambda, x$coef[l,], lty=1, col=l)
+  }
 }
 
